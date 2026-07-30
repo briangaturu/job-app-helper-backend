@@ -1,11 +1,29 @@
 import { eq, and, desc } from "drizzle-orm";
 import { db } from "../../db/index";
-import { interviewQuestions } from "../../db/schema";
+import { interviewQuestions, applications } from "../../db/schema";
 import { generateInterviewQuestions, scoreInterviewAnswer } from "./interview.ai";
 import type { GenerateQuestionsInput, SubmitAnswerInput } from "./interviews.validator";
 
 export async function createQuestionSet(userId: number, input: GenerateQuestionsInput) {
-  const questions = await generateInterviewQuestions(input.jobText);
+  const application = await db.query.applications.findFirst({
+    where: and(eq(applications.id, input.applicationId), eq(applications.userId, userId)),
+  });
+
+  if (!application) {
+    const err = new Error("Application not found") as Error & { status?: number };
+    err.status = 404;
+    throw err;
+  }
+
+  if (!application.jobText) {
+    const err = new Error(
+      "This application has no job description saved to generate questions from"
+    ) as Error & { status?: number };
+    err.status = 400;
+    throw err;
+  }
+
+  const questions = await generateInterviewQuestions(application.jobText, input.count ?? 6);
 
   const rows = await db
     .insert(interviewQuestions)
@@ -35,11 +53,11 @@ export async function submitAnswer(userId: number, input: SubmitAnswerInput) {
     throw err;
   }
 
-  const feedback = await scoreInterviewAnswer(existing.question, input.answer);
+  const feedback = await scoreInterviewAnswer(existing.question, input.userAnswer);
 
   const [updated] = await db
     .update(interviewQuestions)
-    .set({ userAnswer: input.answer, feedback })
+    .set({ userAnswer: input.userAnswer, feedback })
     .where(eq(interviewQuestions.id, input.questionId))
     .returning();
 

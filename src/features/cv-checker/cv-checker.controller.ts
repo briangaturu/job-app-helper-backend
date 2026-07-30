@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import pdfParse from "pdf-parse";
-import { analyzeCVForATS } from "./cv-checker.service.js";
+import { createCvCheck, improveCvCheck, listCvChecks } from "./cv-checker.service.js";
 
 export async function checkCV(req: Request, res: Response) {
   if (!req.file) {
@@ -10,9 +10,8 @@ export async function checkCV(req: Request, res: Response) {
   try {
     let cvText: string;
 
-    // Extract text based on file type
     if (req.file.mimetype === "application/pdf") {
-      const pdfData = await (pdfParse as any)(req.file.buffer);
+      const pdfData = await pdfParse(req.file.buffer);
       cvText = pdfData.text;
     } else if (req.file.mimetype === "text/plain") {
       cvText = req.file.buffer.toString("utf-8");
@@ -28,18 +27,38 @@ export async function checkCV(req: Request, res: Response) {
       });
     }
 
-    // Analyze CV for ATS compatibility
-    const analysis = await analyzeCVForATS(cvText);
+    const saved = await createCvCheck(req.user!.userId, req.file.originalname, cvText);
 
-    res.status(200).json({
-      fileName: req.file.originalname,
-      fileSize: req.file.size,
-      analysis,
-    });
+    res.status(201).json(saved);
   } catch (error) {
     console.error("CV analysis error:", error);
     res.status(500).json({ 
       message: "Failed to analyze CV. Please try again." 
     });
   }
+}
+
+export async function improveCV(req: Request, res: Response) {
+  const { cvCheckId } = req.body;
+
+  if (!cvCheckId || typeof cvCheckId !== "number") {
+    return res.status(400).json({ message: "cvCheckId is required" });
+  }
+
+  try {
+    const updated = await improveCvCheck(req.user!.userId, cvCheckId);
+    res.status(200).json(updated);
+  } catch (error: any) {
+    console.error("CV improvement error:", error);
+    res.status(error.status || 500).json({ 
+      message: error.status === 404 
+        ? "CV check not found" 
+        : "Failed to generate improved CV. Please try again." 
+    });
+  }
+}
+
+export async function list(req: Request, res: Response) {
+  const result = await listCvChecks(req.user!.userId);
+  res.status(200).json(result);
 }

@@ -8,6 +8,13 @@
       "when": 1785228910015,
       "tag": "0000_acoustic_skaar",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1785405063255,
+      "tag": "0001_wealthy_lady_bullseye",
+      "breakpoints": true
     }
   ]
 }

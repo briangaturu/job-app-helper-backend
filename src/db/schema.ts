@@ -85,3 +85,15 @@ export const payments = pgTable("payments", {
   amount: integer("amount").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
+
+export const cvChecks = pgTable("cv_checks", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  fileName: varchar("file_name", { length: 255 }).notNull(),
+  cvText: text("cv_text").notNull(),
+  analysis: jsonb("analysis").notNull(),
+  improvedCv: text("improved_cv"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});

@@ -2,7 +2,7 @@ import { Router } from "express";
 import multer from "multer";
 import { asyncHandler } from "../../utils/asyncHandler.js";
 import { requireAuth } from "../../middleware/auth.js";
-import { checkCV } from "./cv-checker.controller.js";
+import { checkCV, improveCV, list } from "./cv-checker.controller.js";
 
 const router = Router();
 
@@ -26,5 +26,9 @@ const upload = multer({
 });
 
 router.post("/check", requireAuth, upload.single("cv"), asyncHandler(checkCV));
+router.post("/improve", requireAuth, asyncHandler(improveCV));
+router.post("/check", requireAuth, upload.single("cv"), asyncHandler(checkCV));
+router.post("/improve", requireAuth, asyncHandler(improveCV));
+router.get("/history", requireAuth, asyncHandler(list));
 
 export default router;
