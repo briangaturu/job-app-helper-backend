@@ -1,6 +1,9 @@
-import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const groq = new OpenAI({
+  apiKey: process.env.GROQ_API_KEY,
+  baseURL: "https://api.groq.com/openai/v1",
+});
 
 export interface GenerationOutput {
   resumeBullets: string[];
@@ -20,19 +23,22 @@ const SYSTEM_PROMPT = `You are a job application assistant. Given a job descript
 }`;
 
 export async function generateApplicationAssets(jobText: string): Promise<GenerationOutput> {
-  const response = await anthropic.messages.create({
-    model: "claude-sonnet-4-6",
+  const response = await groq.chat.completions.create({
+    model: "openai/gpt-oss-120b",
     max_tokens: 1500,
-    system: SYSTEM_PROMPT,
-    messages: [{ role: "user", content: jobText }],
+    messages: [
+      { role: "system", content: SYSTEM_PROMPT },
+      { role: "user", content: jobText },
+    ],
   });
 
-  const textBlock = response.content.find((block) => block.type === "text");
-  if (!textBlock || textBlock.type !== "text") {
-    throw new Error("AI response contained no text content");
+  const content = response.choices[0]?.message?.content;
+
+  if (!content) {
+    throw new Error("AI response contained no content");
   }
 
-  const cleaned = textBlock.text.replace(/```json|```/g, "").trim();
+  const cleaned = content.replace(/```json|```/g, "").trim();
 
   try {
     return JSON.parse(cleaned) as GenerationOutput;

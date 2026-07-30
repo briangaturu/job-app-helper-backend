@@ -4,7 +4,7 @@ import { users, generations } from "../../db/schema.js";
 import { generateApplicationAssets } from "./ai.service.js";
 import type { CreateGenerationInput } from "./generations.validator.js";
 
-const FREE_DAILY_LIMIT = 2;
+const FREE_DAILY_LIMIT = 100; // Increased for testing - change back to 2 for production
 
 function isNewDay(usageResetAt: string) {
   const resetDate = new Date(usageResetAt).toDateString();
