@@ -66,5 +66,19 @@ export async function getApplicationStats(userId: number) {
     .where(eq(applications.userId, userId))
     .groupBy(applications.status);
 
-  return rows;
+  const stats = {
+    total: 0,
+    saved: 0,
+    applied: 0,
+    interviewing: 0,
+    offer: 0,
+    rejected: 0,
+  };
+
+  for (const row of rows) {
+    stats[row.status] = row.count;
+    stats.total += row.count;
+  }
+
+  return stats;
 }
