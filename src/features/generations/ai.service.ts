@@ -22,13 +22,17 @@ const SYSTEM_PROMPT = `You are a job application assistant. Given a job descript
   "matchScore": number         // 0-100 estimate of how well a strong generalist candidate's resume could be tailored to match this posting's stated requirements
 }`;
 
-export async function generateApplicationAssets(jobText: string): Promise<GenerationOutput> {
+export async function generateApplicationAssets(jobText: string, profile?: any): Promise<GenerationOutput> {
+  const userContent = profile
+    ? `Job Description:\n${jobText}\n\nCandidate Profile:\n${JSON.stringify(profile)}`
+    : jobText;
+
   const response = await groq.chat.completions.create({
     model: "openai/gpt-oss-120b",
     max_tokens: 1500,
     messages: [
       { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: jobText },
+      { role: "user", content: userContent },
     ],
   });
 

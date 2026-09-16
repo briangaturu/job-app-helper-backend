@@ -29,6 +29,8 @@ export const users = pgTable("users", {
   dailyGenerationCount: integer("daily_generation_count").notNull().default(0),
   usageResetAt: date("usage_reset_at").notNull().defaultNow(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  // flexible JSON blob for storing profile details and certifications
+  profile: jsonb("profile"),
 });
 
 export const generations = pgTable("generations", {

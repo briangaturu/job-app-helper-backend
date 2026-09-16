@@ -15,6 +15,13 @@
       "when": 1785405063255,
       "tag": "0001_wealthy_lady_bullseye",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786819536084,
+      "tag": "0002_thick_the_fallen",
+      "breakpoints": true
     }
   ]
 }

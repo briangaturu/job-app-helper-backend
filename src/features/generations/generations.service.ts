@@ -40,12 +40,13 @@ async function checkAndConsumeUsage(userId: number) {
       usageResetAt: new Date().toISOString().slice(0, 10),
     })
     .where(eq(users.id, userId));
+  return user;
 }
 
 export async function createGeneration(userId: number, input: CreateGenerationInput) {
-  await checkAndConsumeUsage(userId);
+  const user = await checkAndConsumeUsage(userId);
 
-  const output = await generateApplicationAssets(input.jobText);
+  const output = await generateApplicationAssets(input.jobText, (user as any).profile);
 
   const [saved] = await db
     .insert(generations)
